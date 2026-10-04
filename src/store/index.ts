@@ -8,6 +8,8 @@ export interface Item {
   watched: boolean
   favorite: boolean
   addedAt: number
+  rating: number | null
+  review: string
 }
 
 const KEY = 'library'
@@ -30,14 +32,37 @@ const store = createStore<State>({
       const i = s.items.find((i) => i.id === id)
       if (i) i.watched = !i.watched
     },
+    setReview: (
+      s,
+      { id, ...patch }: Pick<Item, 'id'> & Partial<Pick<Item, 'rating' | 'review'>>,
+    ) => {
+      const i = s.items.find((i) => i.id === id)
+      if (i) Object.assign(i, patch)
+    },
+    // insert the item at index `from` before the item currently at index `to`
+    move: (s, { from, to }: { from: number; to: number }) => {
+      const [item] = s.items.splice(from, 1)
+      s.items.splice(to > from ? to - 1 : to, 0, item!)
+    },
     toggleFavorite: (s, id: string) => {
       const i = s.items.find((i) => i.id === id)
       if (i) i.favorite = !i.favorite
     },
   },
   actions: {
-    addItem({ commit, getters }: ActionContext<State, State>, item: Omit<Item, 'watched' | 'favorite' | 'addedAt'>) {
-      if (!getters.has(item.id)) commit('add', { ...item, watched: false, favorite: false, addedAt: Date.now() })
+    addItem(
+      { commit, getters }: ActionContext<State, State>,
+      item: Omit<Item, 'watched' | 'favorite' | 'addedAt' | 'rating' | 'review'>,
+    ) {
+      if (!getters.has(item.id))
+        commit('add', {
+          ...item,
+          watched: false,
+          favorite: false,
+          addedAt: Date.now(),
+          rating: null,
+          review: '',
+        })
     },
   },
 })

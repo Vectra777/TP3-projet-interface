@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <nav class="flex gap-4 border-b p-4">
+  <nav class="flex gap-4 border-b border-white/10 p-4">
     <RouterLink to="/">Search</RouterLink>
     <RouterLink to="/library">Library</RouterLink>
     <RouterLink to="/favorites">Favorites</RouterLink>
