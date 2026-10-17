@@ -10,9 +10,23 @@ async function get(path: string, params: Record<string, string | number> = {}) {
   return res.json()
 }
 
+export interface MovieResult {
+  id: number
+  title: string
+  release_date: string
+  poster_path: string | null
+  overview: string
+}
+
 export async function searchMovies(query: string, page = 1) {
   const data = await get('/search/movie', { query, page })
-  return data.results as { id: number; title: string; release_date: string; poster_path: string | null; overview: string }[]
+  return { results: data.results as MovieResult[], totalPages: data.total_pages as number }
+}
+
+// most popular movies this week, shown on the home page before any search
+export async function getTrending() {
+  const data = await get('/trending/movie/week')
+  return data.results as MovieResult[]
 }
 
 // details + credits in one call; director = crew member with job "Director"
@@ -20,8 +34,14 @@ export async function getMovie(id: string) {
   return get(`/movie/${id}`, { append_to_response: 'credits' })
 }
 
+// search results don't include credits, so the director needs its own request
+export async function getDirector(id: number | string): Promise<string> {
+  const data = await get(`/movie/${id}/credits`)
+  return data.crew.find((p: { job: string }) => p.job === 'Director')?.name ?? ''
+}
+
 // movies similar to the given one, based on TMDB's recommendation engine
 export async function getRecommendations(id: string, page = 1) {
   const data = await get(`/movie/${id}/recommendations`, { page })
-  return data.results as { id: number; title: string; release_date: string; poster_path: string | null; overview: string }[]
+  return data.results as MovieResult[]
 }

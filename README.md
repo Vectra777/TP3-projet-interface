@@ -1,54 +1,76 @@
-# TP3-proj-interface
+# Movie Library — TP3 Projet Interface
 
-This template should help get you started developing with Vue 3 in Vite.
+Application Vue.js pour chercher des films avec l'API TMDB, les ajouter à une bibliothèque personnelle (rangée sur des étagères de DVD), gérer ses favoris et suivre ce qu'on a vu.
 
-## Recommended IDE Setup
+**Prototype Figma :** _lien à ajouter_
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Technologies
 
-## Recommended Browser Setup
+- Vue 3 + Vite + TypeScript
+- Vue Router : `/`, `/library`, `/favorites`, `/movie/:id`
+- Vuex : state, getters, mutations, actions ([src/store/index.ts](src/store/index.ts))
+- localStorage : la bibliothèque est sauvegardée à chaque modification et rechargée au démarrage
+- Tailwind CSS
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## API utilisée
 
-## Type Support for `.vue` Imports in TS
+[TMDB (The Movie Database)](https://developer.themoviedb.org/docs), API v3 ([src/api/tmdb.ts](src/api/tmdb.ts)) :
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+| Endpoint | Utilisation |
+|---|---|
+| `/trending/movie/week` | films à la une sur l'écran d'accueil |
+| `/search/movie` | recherche (titre, année, affiche), paginée |
+| `/movie/{id}/credits` | réalisateur de chaque résultat |
+| `/movie/{id}?append_to_response=credits` | page détail (synopsis, durée, genres, casting) |
+| `/movie/{id}/recommendations` | « You might also like » |
 
-## Customize configuration
+## Installation
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+Prérequis : [Node.js](https://nodejs.org/) 22.18+ ou 24.12+.
 
-## Project Setup
+1. Installer les dépendances :
+   ```sh
+   npm install
+   ```
+2. Obtenir une clé API TMDB gratuite : créer un compte sur [themoviedb.org](https://www.themoviedb.org/), puis *Settings → API*. Prendre la **API Key (v3)** (comme Application URL, `http://localhost:5173` suffit).
+3. Copier `.env.example` en `.env` et y mettre la clé :
+   ```
+   VITE_TMDB_KEY=votre_cle
+   ```
+   `.env` est ignoré par Git : ne jamais mettre la clé dans `.env.example`.
+4. Lancer le serveur de développement, puis ouvrir http://localhost:5173 :
+   ```sh
+   npm run dev
+   ```
+
+> Sous Windows, si PowerShell affiche « l'exécution de scripts est désactivée », lancer une fois
+> `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`, ou utiliser `npm.cmd run dev`.
+
+### Autres commandes
 
 ```sh
-npm install
+npm run test:unit   # tests Vitest
+npm run build       # vérification des types + build de production
+npm run lint        # oxlint + eslint
 ```
 
-### Compile and Hot-Reload for Development
+## Fonctionnalités
 
-```sh
-npm run dev
-```
+**Principales**
+- Recherche de films : titre, réalisateur, année, affiche, avec ajout direct à la bibliothèque
+- Bibliothèque `/library` : voir, supprimer, marquer vu / pas vu, ajouter aux favoris
+- Favoris `/favorites` (getter Vuex `favorites`)
+- Persistance avec localStorage
 
-### Type-Check, Compile and Minify for Production
+**Comptes utilisateurs**
+- Page `/login` : création de compte et connexion. Toutes les autres pages demandent d'être connecté (garde Vue Router).
+- Chaque utilisateur a sa propre bibliothèque et ses propres favoris (`library:<nom>` dans localStorage). La session reste ouverte après un rafraîchissement.
+- Les comptes sont **locaux au navigateur**, sans serveur. Le mot de passe est haché en SHA-256, ce qui évite de le stocker en clair mais ne remplace pas une vraie authentification côté serveur.
 
-```sh
-npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+**Avancées (Part 6)**
+1. **Page détail** `/movie/:id` : synopsis, durée, genres, casting, recommandations
+2. **Note personnelle** de 1 à 5 étoiles, affichée sur l'étagère et dans les favoris
+3. **Avis personnel** (texte) sauvegardé dans localStorage
+4. **Statistiques** : total, vus, restants, favoris, note moyenne
+5. **Meilleure expérience API** : indicateur de chargement, message d'erreur, état « No results found », bouton « Load more », pas de doublons dans la bibliothèque
+6. **UI/UX** : confirmation avant suppression, états vides de la bibliothèque et des favoris, glisser-déposer pour réorganiser les étagères, animations et sons

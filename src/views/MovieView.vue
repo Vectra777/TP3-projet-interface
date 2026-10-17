@@ -26,12 +26,18 @@ const saved = computed(() => (store.state.items as Item[]).find((i) => i.id === 
 
 function addToLibrary() {
   const m = movie.value
-  store.dispatch('addItem', { id: String(m.id), title: m.title, year: m.release_date?.slice(0, 4) ?? '', poster: m.poster_path ?? '' })
+  store.dispatch('addItem', {
+    id: String(m.id),
+    title: m.title,
+    year: m.release_date?.slice(0, 4) ?? '',
+    poster: m.poster_path ?? '',
+    director: director(m) ?? '',
+  })
 }
 // the review is lost with it, so ask first
 function removeFromLibrary() {
   if (confirm(`Remove "${saved.value!.title}" from your library? Your review will be deleted.`))
-    store.commit('remove', saved.value!.id)
+    store.dispatch('removeItem', saved.value!.id)
 }
 const setReview =(patch: Partial<Pick<Item, 'rating' | 'review'>>) => store.commit('setReview', { id: saved.value!.id, ...patch })
 
@@ -115,11 +121,20 @@ const hours = (min: number) => `${Math.floor(min / 60)}h${String(min % 60).padSt
             :aria-pressed="saved.watched === (i === 1)"
             :class="saved.watched === (i === 1) ? 'bg-green-500 text-gray-900' : 'text-gray-400 hover:text-white'"
             class="rounded-md px-4 py-1.5 text-sm font-semibold transition"
-            @click="saved.watched !== (i === 1) && store.commit('toggleWatched', saved.id)"
+            @click="saved.watched !== (i === 1) && store.dispatch('toggleWatched', saved.id)"
           >
             {{ label }}
           </button>
         </div>
+
+        <button
+          :aria-pressed="saved.favorite"
+          :class="saved.favorite ? 'bg-pink-500/20 text-pink-300' : 'text-gray-400 hover:text-white'"
+          class="ml-3 rounded-lg border border-white/20 px-3 py-1.5 text-sm font-semibold"
+          @click="store.dispatch('toggleFavorite', saved.id)"
+        >
+          {{ saved.favorite ? '♥ Favorite' : '♡ Favorite' }}
+        </button>
 
         <button
           class="ml-3 rounded-lg px-3 py-1.5 text-sm font-semibold text-red-400 hover:bg-red-500/10"

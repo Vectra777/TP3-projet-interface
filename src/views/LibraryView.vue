@@ -143,6 +143,17 @@ async function onCaseClick() {
 
 const goToMovie = () => router.push(`/movie/${selected.value!.id}`)
 
+// its shelf twin is gone, so there is nowhere to fly back to: just close
+function removeSelected() {
+  const item = selected.value!
+  if (!confirm(`Remove "${item.title}" from your library? Your review will be deleted.`)) return
+  selected.value = null
+  phase.value = 'idle'
+  store.dispatch('removeItem', item.id)
+}
+
+const stats = computed(() => store.getters.stats)
+
 // tiny squares sweep diagonally from top-left; odd diagonals lag behind, so it fills in as a checkerboard
 const CELL = 40
 const cols = ref(0)
@@ -169,6 +180,23 @@ onUnmounted(() => removeEventListener('keydown', onKey))
 <template>
   <h1 class="text-2xl font-bold">Library</h1>
   <p class="mb-6 text-sm text-gray-400">Drag the cases to rearrange your shelves.</p>
+
+  <dl v-if="stats.total" class="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-5">
+    <div
+      v-for="[label, value] in [
+        ['Movies', stats.total],
+        ['Watched', stats.watched],
+        ['To watch', stats.remaining],
+        ['Favorites', stats.favorites],
+        ['Avg. rating', stats.averageRating === null ? '—' : `★ ${stats.averageRating.toFixed(1)}`],
+      ]"
+      :key="label"
+      class="rounded-xl border border-white/15 p-3"
+    >
+      <dt class="text-xs uppercase tracking-wide text-gray-400">{{ label }}</dt>
+      <dd class="text-2xl font-bold">{{ value }}</dd>
+    </div>
+  </dl>
 
   <p v-if="!shelves.length" class="rounded-xl border border-dashed p-8 text-center text-gray-400">
     Your shelf is empty. Open a movie and click “Add to library”.
@@ -211,6 +239,14 @@ onUnmounted(() => removeEventListener('keydown', onKey))
             class="sleeve flex items-center bg-gray-700 p-2 text-xs font-bold text-white"
             >{{ item.title }}</span
           >
+          <span
+            v-if="item.favorite || item.watched || item.rating"
+            class="absolute right-[6%] bottom-[4%] z-10 flex gap-1 rounded-full bg-black/70 px-1.5 text-[10px] font-bold"
+          >
+            <span v-if="item.favorite" class="text-pink-400">♥</span>
+            <span v-if="item.rating" class="text-yellow-400">★{{ item.rating }}</span>
+            <span v-else-if="item.watched" class="text-green-400">✓</span>
+          </span>
         </button>
       </div>
       <div class="plank" />
@@ -297,7 +333,30 @@ onUnmounted(() => removeEventListener('keydown', onKey))
         class="absolute top-full left-1/2 mt-6 w-64 -translate-x-1/2 text-center text-white transition-opacity duration-300 sm:top-1/2 sm:left-full sm:mt-0 sm:ml-12 sm:-translate-y-1/2 sm:translate-x-0 sm:text-left"
       >
         <h2 class="text-2xl font-extrabold tracking-tight">{{ selected.title }}</h2>
-        <p class="text-sm text-gray-300">{{ selected.year }}</p>
+        <p class="text-sm text-gray-300">
+          {{ selected.year }}<template v-if="selected.director"> · {{ selected.director }}</template>
+        </p>
+        <div class="mt-4 flex flex-wrap justify-center gap-2 text-sm font-semibold sm:justify-start">
+          <button
+            :aria-pressed="selected.watched"
+            :class="selected.watched ? 'bg-green-500 text-gray-900' : 'border border-white/30 hover:bg-white/10'"
+            class="rounded-lg px-3 py-1.5"
+            @click="store.dispatch('toggleWatched', selected.id)"
+          >
+            {{ selected.watched ? '✓ Watched' : 'Mark as watched' }}
+          </button>
+          <button
+            :aria-pressed="selected.favorite"
+            :class="selected.favorite ? 'bg-pink-500/20 text-pink-300' : 'hover:bg-white/10'"
+            class="rounded-lg border border-white/30 px-3 py-1.5"
+            @click="store.dispatch('toggleFavorite', selected.id)"
+          >
+            {{ selected.favorite ? '♥ Favorite' : '♡ Favorite' }}
+          </button>
+          <button class="rounded-lg px-3 py-1.5 text-red-400 hover:bg-red-500/10" @click="removeSelected">
+            Remove
+          </button>
+        </div>
         <p class="mt-4 text-xs uppercase tracking-wide text-gray-400">
           Click the case to open · Esc to put it back
         </p>
