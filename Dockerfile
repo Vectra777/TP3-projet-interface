@@ -6,7 +6,8 @@ COPY . .
 RUN npm run build-only
 
 FROM nginx:1.29-alpine
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY docker/40-tmdb-key.sh /docker-entrypoint.d/40-tmdb-key.sh
+# filled into the nginx config at container start
+ENV TMDB_KEY=""
+COPY docker/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80

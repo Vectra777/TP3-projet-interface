@@ -35,9 +35,9 @@ Prérequis : [Node.js](https://nodejs.org/) 22.18+ ou 24.12+.
 2. Obtenir une clé API TMDB gratuite : créer un compte sur [themoviedb.org](https://www.themoviedb.org/), puis *Settings → API*. Prendre la **API Key (v3)** (comme Application URL, `http://localhost:5173` suffit).
 3. Copier `.env.example` en `.env` et y mettre la clé :
    ```
-   VITE_TMDB_KEY=votre_cle
+   TMDB_KEY=votre_cle
    ```
-   `.env` est ignoré par Git : ne jamais mettre la clé dans `.env.example`.
+   `.env` est ignoré par Git : ne jamais mettre la clé dans `.env.example`. La clé n'est jamais envoyée au navigateur : le front appelle `/tmdb/...` et c'est le serveur (Vite en dev, nginx dans Docker) qui relaie vers TMDB en ajoutant la clé.
 4. Lancer le serveur de développement, puis ouvrir http://localhost:5173 :
    ```sh
    npm run dev
@@ -62,7 +62,7 @@ Une image prête à l'emploi est publiée sur le GitHub Container Registry. Avec
 docker run -d -p 8080:80 -e TMDB_KEY=votre_cle ghcr.io/vectra777/tp3-projet-interface:latest
 ```
 
-Puis ouvrir http://localhost:8080. La clé TMDB est donnée au lancement du conteneur : l'image n'en contient aucune.
+Puis ouvrir http://localhost:8080. La clé TMDB est donnée au lancement du conteneur : l'image n'en contient aucune, et elle reste côté serveur (nginx l'ajoute aux requêtes vers TMDB).
 
 Pour construire l'image soi-même :
 

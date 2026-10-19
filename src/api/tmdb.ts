@@ -1,11 +1,10 @@
-// key from the Docker container if set, otherwise from .env
-const KEY = window.TMDB_KEY || import.meta.env.VITE_TMDB_KEY
-const BASE = 'https://api.themoviedb.org/3'
+// requests go through our own server (nginx in Docker, Vite in dev), which adds the API key
+const BASE = '/tmdb'
 
 export const posterUrl = (path: string | null) => (path ? `https://image.tmdb.org/t/p/w342${path}` : '')
 
 async function get(path: string, params: Record<string, string | number> = {}) {
-  const qs = new URLSearchParams({ api_key: KEY, language: 'fr-FR', ...params } as Record<string, string>)
+  const qs = new URLSearchParams({ language: 'fr-FR', ...params } as Record<string, string>)
   const res = await fetch(`${BASE}${path}?${qs}`)
   if (!res.ok) throw new Error(`TMDB HTTP ${res.status}`)
   return res.json()
