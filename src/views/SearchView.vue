@@ -116,7 +116,7 @@ async function add(m: MovieResult) {
         <p class="mt-2 text-sm font-semibold">{{ movie.title }}</p>
       </RouterLink>
       <p class="text-xs text-gray-400">
-        {{ movie.release_date?.slice(0, 4) || '—' }}<template v-if="directors[movie.id]"> · {{ directors[movie.id] }}</template>
+        {{ movie.release_date?.slice(0, 4) || '-' }}<template v-if="directors[movie.id]"> · {{ directors[movie.id] }}</template>
       </p>
       <button
         v-if="!store.getters.has(String(movie.id))"

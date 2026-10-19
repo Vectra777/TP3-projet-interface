@@ -1,4 +1,4 @@
-# Movie Library — TP3 Projet Interface
+# Movie Library - TP3 Projet Interface
 
 Application Vue.js pour chercher des films avec l'API TMDB, les ajouter à une bibliothèque personnelle (rangée sur des étagères de DVD), gérer ses favoris et suivre ce qu'on a vu.
 
@@ -53,6 +53,30 @@ npm run test:unit   # tests Vitest
 npm run build       # vérification des types + build de production
 npm run lint        # oxlint + eslint
 ```
+
+## Déploiement avec Docker
+
+Une image prête à l'emploi est publiée sur le GitHub Container Registry. Avec [Docker](https://docs.docker.com/get-docker/) installé, une seule commande suffit :
+
+```sh
+docker run -d -p 8080:80 -e TMDB_KEY=votre_cle ghcr.io/vectra777/tp3-projet-interface:latest
+```
+
+Puis ouvrir http://localhost:8080. La clé TMDB est donnée au lancement du conteneur : l'image n'en contient aucune.
+
+Pour construire l'image soi-même :
+
+```sh
+docker build -t movie-library .
+docker run -d -p 8080:80 -e TMDB_KEY=votre_cle movie-library
+```
+
+## Intégration continue
+
+Le workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) tourne à chaque push et pull request :
+
+1. **checks** : lint (oxlint + eslint), tests Vitest, vérification des types et build
+2. **docker** (push sur `main` ou tag `v*` uniquement, si les checks passent) : construit l'image et la publie sur `ghcr.io/vectra777/tp3-projet-interface` avec les tags `latest`, `sha-<commit>` et la version pour un tag `v1.2.3`
 
 ## Fonctionnalités
 

@@ -1,4 +1,5 @@
-const KEY = import.meta.env.VITE_TMDB_KEY
+// key from the Docker container if set, otherwise from .env
+const KEY = window.TMDB_KEY || import.meta.env.VITE_TMDB_KEY
 const BASE = 'https://api.themoviedb.org/3'
 
 export const posterUrl = (path: string | null) => (path ? `https://image.tmdb.org/t/p/w342${path}` : '')

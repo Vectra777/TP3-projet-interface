@@ -25,7 +25,7 @@ const favorites = computed<Item[]>(() => store.getters.favorites)
         <p class="mt-2 text-sm font-semibold">{{ item.title }}</p>
       </RouterLink>
       <p class="text-xs text-gray-400">
-        {{ item.year || '—' }}<template v-if="item.director"> · {{ item.director }}</template>
+        {{ item.year || '-' }}<template v-if="item.director"> · {{ item.director }}</template>
       </p>
       <p class="text-xs text-gray-400">
         {{ item.watched ? '✓ Watched' : 'Not watched yet' }}

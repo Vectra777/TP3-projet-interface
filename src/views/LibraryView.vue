@@ -196,7 +196,7 @@ onUnmounted(() => removeEventListener('keydown', onKey))
         ['Watched', stats.watched],
         ['To watch', stats.remaining],
         ['Favorites', stats.favorites],
-        ['Avg. rating', stats.averageRating === null ? '—' : `★ ${stats.averageRating.toFixed(1)}`],
+        ['Avg. rating', stats.averageRating === null ? '-' : `★ ${stats.averageRating.toFixed(1)}`],
       ]"
       :key="label"
       class="rounded-xl border border-white/15 p-3"
@@ -222,7 +222,7 @@ onUnmounted(() => removeEventListener('keydown', onKey))
     </select>
     <select v-model="view.sort" aria-label="Sort by" class="rounded-lg border border-white/15 bg-gray-900 px-3 py-2">
       <option value="custom">My order</option>
-      <option value="title">Title (A–Z)</option>
+      <option value="title">Title (A-Z)</option>
       <option value="year">Year (newest)</option>
       <option value="added">Recently added</option>
     </select>
