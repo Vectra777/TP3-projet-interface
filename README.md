@@ -2,7 +2,7 @@
 
 Application Vue.js pour chercher des films avec l'API TMDB, les ajouter à une bibliothèque personnelle (rangée sur des étagères de DVD), gérer ses favoris et suivre ce qu'on a vu.
 
-**Prototype Figma :** _lien à ajouter_
+**Figma (persona, wireframes, prototype) :** https://www.figma.com/design/LFcrY5xVptKjuiHoc3eXnN/TP3--Project-Design
 
 ## Technologies
 
@@ -73,4 +73,5 @@ npm run lint        # oxlint + eslint
 3. **Avis personnel** (texte) sauvegardé dans localStorage
 4. **Statistiques** : total, vus, restants, favoris, note moyenne
 5. **Meilleure expérience API** : indicateur de chargement, message d'erreur, état « No results found », bouton « Load more », pas de doublons dans la bibliothèque
-6. **UI/UX** : confirmation avant suppression, états vides de la bibliothèque et des favoris, glisser-déposer pour réorganiser les étagères, animations et sons
+6. **Filtres et tri** dans la bibliothèque (getter Vuex `view`) : recherche par titre ou réalisateur, filtre favoris / vus / à voir, tri par titre, année ou date d'ajout
+7. **UI/UX** : confirmation avant suppression, états vides de la bibliothèque et des favoris, glisser-déposer pour réorganiser les étagères, animations et sons

@@ -29,6 +29,11 @@ interface State {
 }
 type Context = ActionContext<State, State>
 type Credentials = { name: string; password: string }
+export interface View {
+  query: string
+  show: 'all' | 'favorites' | 'watched' | 'unwatched'
+  sort: 'custom' | 'title' | 'year' | 'added'
+}
 
 // a corrupted value must not crash the whole app at startup
 function load<T>(key: string, fallback: T): T {
@@ -55,6 +60,22 @@ const store = createStore<State>({
   getters: {
     favorites: (s) => s.items.filter((i) => i.favorite),
     has: (s) => (id: string) => s.items.some((i) => i.id === id),
+    // library search + filter + sort; 'custom' keeps the drag-and-drop order
+    view: (s) => ({ query, show, sort }: View) => {
+      const q = query.trim().toLowerCase()
+      const items = s.items.filter(
+        (i) =>
+          (i.title.toLowerCase().includes(q) || i.director.toLowerCase().includes(q)) &&
+          (show === 'all' ||
+            (show === 'favorites' && i.favorite) ||
+            (show === 'watched' && i.watched) ||
+            (show === 'unwatched' && !i.watched)),
+      )
+      if (sort === 'title') items.sort((a, b) => a.title.localeCompare(b.title))
+      if (sort === 'year') items.sort((a, b) => b.year.localeCompare(a.year)) // newest first
+      if (sort === 'added') items.sort((a, b) => b.addedAt - a.addedAt) // latest first
+      return items
+    },
     stats: (s) => {
       const watched = s.items.filter((i) => i.watched).length
       const rated = s.items.filter((i) => i.rating !== null)

@@ -3,14 +3,20 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { posterUrl } from '@/api/tmdb'
-import type { Item } from '@/store'
+import type { Item, View } from '@/store'
 
 const store = useStore()
 const router = useRouter()
 
+const view = ref<View>({ query: '', show: 'all', sort: 'custom' })
+// drag indexes are store indexes, so rearranging only makes sense on the full, unsorted list
+const canDrag = computed(
+  () => view.value.sort === 'custom' && view.value.show === 'all' && !view.value.query.trim(),
+)
+
 const PER_SHELF = 5
 const shelves = computed(() => {
-  const items: Item[] = store.state.items
+  const items: Item[] = store.getters.view(view.value)
   const rows = []
   for (let i = 0; i < items.length; i += PER_SHELF) rows.push(items.slice(i, i + PER_SHELF))
   return rows
@@ -179,7 +185,9 @@ onUnmounted(() => removeEventListener('keydown', onKey))
 
 <template>
   <h1 class="text-2xl font-bold">Library</h1>
-  <p class="mb-6 text-sm text-gray-400">Drag the cases to rearrange your shelves.</p>
+  <p class="mb-6 text-sm text-gray-400">
+    {{ canDrag ? 'Drag the cases to rearrange your shelves.' : 'Clear the filters and pick “My order” to rearrange.' }}
+  </p>
 
   <dl v-if="stats.total" class="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-5">
     <div
@@ -198,8 +206,33 @@ onUnmounted(() => removeEventListener('keydown', onKey))
     </div>
   </dl>
 
-  <p v-if="!shelves.length" class="rounded-xl border border-dashed p-8 text-center text-gray-400">
+  <div v-if="stats.total" class="mb-8 flex flex-wrap gap-3 text-sm">
+    <input
+      v-model="view.query"
+      type="search"
+      placeholder="Search your library…"
+      aria-label="Search your library"
+      class="min-w-48 flex-1 rounded-lg border border-white/15 bg-transparent px-3 py-2"
+    />
+    <select v-model="view.show" aria-label="Filter" class="rounded-lg border border-white/15 bg-gray-900 px-3 py-2">
+      <option value="all">All movies</option>
+      <option value="favorites">Favorites</option>
+      <option value="watched">Watched</option>
+      <option value="unwatched">To watch</option>
+    </select>
+    <select v-model="view.sort" aria-label="Sort by" class="rounded-lg border border-white/15 bg-gray-900 px-3 py-2">
+      <option value="custom">My order</option>
+      <option value="title">Title (A–Z)</option>
+      <option value="year">Year (newest)</option>
+      <option value="added">Recently added</option>
+    </select>
+  </div>
+
+  <p v-if="!stats.total" class="rounded-xl border border-dashed p-8 text-center text-gray-400">
     Your shelf is empty. Open a movie and click “Add to library”.
+  </p>
+  <p v-else-if="!shelves.length" class="rounded-xl border border-dashed p-8 text-center text-gray-400">
+    No movie matches these filters.
   </p>
 
   <div v-else class="flex flex-col gap-12">
@@ -219,7 +252,7 @@ onUnmounted(() => removeEventListener('keydown', onKey))
             'drop-target': dragOver === r * PER_SHELF + i && dragFrom !== r * PER_SHELF + i,
           }"
           class="case shelf-case w-[17%]"
-          draggable="true"
+          :draggable="canDrag"
           @mouseenter="sfx.tick"
           @click="pick(item, $event)"
           @dragstart="dragFrom = r * PER_SHELF + i"

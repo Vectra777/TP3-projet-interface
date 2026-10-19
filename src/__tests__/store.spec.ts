@@ -33,6 +33,26 @@ describe('accounts', () => {
   })
 })
 
+describe('view', () => {
+  it('searches, filters and sorts without touching the stored order', () => {
+    store.state.items = [
+      { id: 'a', title: 'Tenet', director: 'Christopher Nolan', year: '2020', addedAt: 1, watched: true, favorite: false },
+      { id: 'b', title: 'Alien', director: 'Ridley Scott', year: '1979', addedAt: 3, watched: false, favorite: true },
+      { id: 'c', title: 'Inception', director: 'Christopher Nolan', year: '2010', addedAt: 2, watched: false, favorite: false },
+    ] as never
+    const ids = (v: object) =>
+      store.getters.view({ query: '', show: 'all', sort: 'custom', ...v }).map((i: { id: string }) => i.id).join('')
+    expect(ids({})).toBe('abc')
+    expect(ids({ sort: 'title' })).toBe('bca')
+    expect(ids({ sort: 'year' })).toBe('acb')
+    expect(ids({ sort: 'added' })).toBe('bca')
+    expect(ids({ query: ' nolan ' })).toBe('ac')
+    expect(ids({ show: 'unwatched', sort: 'title' })).toBe('bc')
+    expect(ids({ show: 'favorites' })).toBe('b')
+    expect(store.state.items.map((i) => i.id).join('')).toBe('abc')
+  })
+})
+
 describe('favorites and stats', () => {
   it('counts watched, favorites and averages only rated items', () => {
     store.state.items = [
